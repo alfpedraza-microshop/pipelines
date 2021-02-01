@@ -1,2 +1,2 @@
-# pipelines
+# aws-pipelines
 AWS CodePipelines Repository
