@@ -1,0 +1,166 @@
+AWSTemplateFormatVersion: 2010-09-09
+Metadata:
+  'AWS::CloudFormation::Designer':
+    29e80115-d49c-4ade-b5d6-29e5ed402e6f:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 230
+        'y': 130
+      z: 1
+      embeds: []
+    fe173c2d-7424-4af9-b36f-f87afbe3d3f8:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 360
+        'y': 40
+      z: 1
+      embeds: []
+    26ed8075-b9c5-4905-865a-e28ecf8cf8c4:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 70
+        'y': 60
+      z: 1
+      embeds: []
+    ac9f1302-3e08-4218-b6fa-c41b0fa0b794:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 60
+        'y': 150
+      z: 1
+      embeds: []
+    b2817339-ec1e-4b5d-b436-14257a9d7672:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 390
+        'y': 230
+      z: 1
+      embeds: []
+Resources:
+  ProductsArtifactsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 26ed8075-b9c5-4905-865a-e28ecf8cf8c4
+  ProductsCodePipelineRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codepipeline.amazonaws.com
+          Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AdministratorAccess'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: b2817339-ec1e-4b5d-b436-14257a9d7672
+  ProductsCodeBuildRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codebuild.amazonaws.com
+          Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AdministratorAccess'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 57a41b5a-a07c-444f-9b0e-c16687f8f35a
+  ProductsCodeBuild:
+    Type: 'AWS::CodeBuild::Project'
+    Properties:
+      Artifacts:
+        ArtifactIdentifier: Primary
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Type: LINUX_CONTAINER
+        Image: 'aws/codebuild/standard:3.0'
+      Name: microshop-products
+      Source:
+        SourceIdentifier: Primary
+        Type: CODEPIPELINE
+      ServiceRole: !Ref ProductsCodeBuildRole
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: fe173c2d-7424-4af9-b36f-f87afbe3d3f8
+    DependsOn:
+      - ProductsCodeBuildRole
+  ProductsCodeStarConnection:
+    Type: 'AWS::CodeStarConnections::Connection'
+    Properties:
+      ConnectionName: microshop-products
+      ProviderType: GitHub
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: ac9f1302-3e08-4218-b6fa-c41b0fa0b794
+  ProductsCodePipeline:
+    Type: 'AWS::CodePipeline::Pipeline'
+    Properties:
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ProductsArtifactsBucket
+      RestartExecutionOnUpdate: true
+      RoleArn: !GetAtt ProductsCodePipelineRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              RunOrder: 1
+              InputArtifacts: []
+              ActionTypeId:
+                Version: '1'
+                Owner: AWS
+                Category: Source
+                Provider: CodeStarSourceConnection
+              Configuration:
+                ConnectionArn: !GetAtt ProductsCodeStarConnection.ConnectionArn
+                FullRepositoryId: alfpedraza-microshop/products
+                BranchName: main
+                OutputArtifactFormat: CODE_ZIP
+              OutputArtifacts:
+                - Name: SourceArtifact
+        - Name: Build
+          Actions:
+            - Name: Build
+              RunOrder: 1
+              InputArtifacts:
+                - Name: SourceArtifact
+              ActionTypeId:
+                Version: 1
+                Owner: AWS
+                Category: Build
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref ProductsCodeBuild
+                PrimarySource: SourceArtifact
+              OutputArtifacts:
+                - Name: BuildArtifact
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 29e80115-d49c-4ade-b5d6-29e5ed402e6f
+    DependsOn:
+      - ProductsCodeBuild
+      - ProductsArtifactsBucket
+      - ProductsCodeStarConnection
+      - ProductsCodePipelineRole
