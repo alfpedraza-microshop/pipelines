@@ -133,7 +133,7 @@ Resources:
               Configuration:
                 ActionMode: CREATE_UPDATE
                 RoleArn: !GetAtt InstallCodePipelineServiceRole.Arn
-                StackName: MicroshopProductsStack2
+                StackName: MicroshopProductsStack
                 Capabilities: CAPABILITY_IAM
                 TemplatePath: SourceArtifact::products.yml
               RunOrder: 1
