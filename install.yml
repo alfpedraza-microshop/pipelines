@@ -77,6 +77,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - 'cloudformation:*'
+                  - 'codebuild:*'
                   - 'codestar-connections:*'
                   - 's3:*'
                   - 'iam:*'
@@ -87,7 +88,7 @@ Resources:
   InstallCodeStarConnection:
     Type: 'AWS::CodeStarConnections::Connection'
     Properties:
-      ConnectionName: microshop-Install
+      ConnectionName: MicroshopInstallCodeStarConnection
       ProviderType: GitHub
     Metadata:
       'AWS::CloudFormation::Designer':
