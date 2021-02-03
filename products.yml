@@ -117,6 +117,7 @@ Resources:
   ProductsCodePipeline:
     Type: 'AWS::CodePipeline::Pipeline'
     Properties:
+      Name: products-pipeline
       ArtifactStore:
         Type: S3
         Location: !Ref ProductsArtifactsBucket
