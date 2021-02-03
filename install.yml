@@ -95,6 +95,7 @@ Resources:
   InstallCodePipeline:
     Type: 'AWS::CodePipeline::Pipeline'
     Properties:
+      Name: MicroshopInstallCodePipeline
       ArtifactStore:
         Type: S3
         Location: !Ref InstallArtifactsBucket
@@ -131,7 +132,7 @@ Resources:
               Configuration:
                 ActionMode: CREATE_UPDATE
                 RoleArn: !GetAtt InstallCodePipelineServiceRole.Arn
-                StackName: microshop-products
+                StackName: MicroshopProductsStack
                 Capabilities: CAPABILITY_IAM
                 TemplatePath: SourceArtifact::products.yml
               RunOrder: 1
