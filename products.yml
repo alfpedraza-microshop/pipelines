@@ -96,7 +96,7 @@ Resources:
         ComputeType: BUILD_GENERAL1_SMALL
         Type: LINUX_CONTAINER
         Image: 'aws/codebuild/standard:3.0'
-      Name: microshop-products
+      Name: products-build
       Source:
         SourceIdentifier: Primary
         Type: CODEPIPELINE
@@ -109,7 +109,7 @@ Resources:
   ProductsCodeStarConnection:
     Type: 'AWS::CodeStarConnections::Connection'
     Properties:
-      ConnectionName: microshop-products
+      ConnectionName: products-connection
       ProviderType: GitHub
     Metadata:
       'AWS::CloudFormation::Designer':

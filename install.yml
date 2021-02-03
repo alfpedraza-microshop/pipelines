@@ -89,7 +89,7 @@ Resources:
   InstallCodeStarConnection:
     Type: 'AWS::CodeStarConnections::Connection'
     Properties:
-      ConnectionName: MicroshopInstallConnection
+      ConnectionName: install-connection
       ProviderType: GitHub
     Metadata:
       'AWS::CloudFormation::Designer':
@@ -97,7 +97,7 @@ Resources:
   InstallCodePipeline:
     Type: 'AWS::CodePipeline::Pipeline'
     Properties:
-      Name: MicroshopInstallCodePipeline
+      Name: install-pipeline
       ArtifactStore:
         Type: S3
         Location: !Ref InstallArtifactsBucket
@@ -134,7 +134,7 @@ Resources:
               Configuration:
                 ActionMode: CREATE_UPDATE
                 RoleArn: !GetAtt InstallCodePipelineServiceRole.Arn
-                StackName: MicroshopProductsStack
+                StackName: products-stack
                 Capabilities: CAPABILITY_IAM
                 TemplatePath: SourceArtifact::products.yml
               RunOrder: 1
