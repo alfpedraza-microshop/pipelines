@@ -79,7 +79,7 @@ Resources:
                   - 'cloudformation:*'
                   - 'codestar-connections:*'
                   - 's3:*'
-                  - iam:PassRole
+                  - 'iam:*'
                 Resource: '*'
     Metadata:
       'AWS::CloudFormation::Designer':
@@ -131,7 +131,7 @@ Resources:
               Configuration:
                 ActionMode: CREATE_UPDATE
                 RoleArn: !GetAtt InstallCodePipelineServiceRole.Arn
-                StackName: InstallStack
+                StackName: microshop-products
                 Capabilities: CAPABILITY_IAM
                 TemplatePath: SourceArtifact::products.yml
               RunOrder: 1
