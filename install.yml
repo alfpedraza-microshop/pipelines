@@ -1,0 +1,144 @@
+AWSTemplateFormatVersion: 2010-09-09
+Metadata:
+  'AWS::CloudFormation::Designer':
+    29e80115-d49c-4ade-b5d6-29e5ed402e6f:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 230
+        'y': 130
+      z: 1
+      embeds: []
+    fe173c2d-7424-4af9-b36f-f87afbe3d3f8:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 360
+        'y': 40
+      z: 1
+      embeds: []
+    26ed8075-b9c5-4905-865a-e28ecf8cf8c4:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 70
+        'y': 60
+      z: 1
+      embeds: []
+    ac9f1302-3e08-4218-b6fa-c41b0fa0b794:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 60
+        'y': 150
+      z: 1
+      embeds: []
+    b2817339-ec1e-4b5d-b436-14257a9d7672:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 390
+        'y': 230
+      z: 1
+      embeds: []
+Resources:
+  InstallArtifactsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 26ed8075-b9c5-4905-865a-e28ecf8cf8c4
+  InstallCodePipelineServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+                - cloudformation.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: InstallCodePipelineServiceRolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'cloudformation:*'
+                  - 'codestar-connections:*'
+                  - 's3:*'
+                  - iam:PassRole
+                Resource: '*'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: b2817339-ec1e-4b5d-b436-14257a9d7672
+  InstallCodeStarConnection:
+    Type: 'AWS::CodeStarConnections::Connection'
+    Properties:
+      ConnectionName: microshop-Install
+      ProviderType: GitHub
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: ac9f1302-3e08-4218-b6fa-c41b0fa0b794
+  InstallCodePipeline:
+    Type: 'AWS::CodePipeline::Pipeline'
+    Properties:
+      ArtifactStore:
+        Type: S3
+        Location: !Ref InstallArtifactsBucket
+      RestartExecutionOnUpdate: true
+      RoleArn: !GetAtt InstallCodePipelineServiceRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              RunOrder: 1
+              InputArtifacts: []
+              ActionTypeId:
+                Version: '1'
+                Owner: AWS
+                Category: Source
+                Provider: CodeStarSourceConnection
+              Configuration:
+                ConnectionArn: !GetAtt InstallCodeStarConnection.ConnectionArn
+                FullRepositoryId: alfpedraza-microshop/pipelines
+                BranchName: main
+                OutputArtifactFormat: CODE_ZIP
+              OutputArtifacts:
+                - Name: SourceArtifact
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              InputArtifacts:
+                - Name: SourceArtifact
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                RoleArn: !GetAtt InstallCodePipelineServiceRole.Arn
+                StackName: InstallStack
+                Capabilities: CAPABILITY_IAM
+                TemplatePath: SourceArtifact::products.yml
+              RunOrder: 1
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 29e80115-d49c-4ade-b5d6-29e5ed402e6f
+    DependsOn:
+      - InstallArtifactsBucket
+      - InstallCodeStarConnection
+      - InstallCodePipelineServiceRole
